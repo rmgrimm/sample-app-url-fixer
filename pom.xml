@@ -1,0 +1,181 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="
+         http://www.w3.org/2001/XMLSchema-instance https://www.w3.org/2001/XMLSchema-instance
+         http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.redhat.consulting.sample</groupId>
+  <artifactId>sample-app-url-fixer</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+
+  <name>Sample URL Fixer</name>
+  <description><![CDATA[
+    A sample application that uses Quarkus and Camel to act as a proxy and fix
+    URL query parameters.
+  ]]></description>
+
+  <properties>
+    <!-- Java version -->
+    <java.version>11</java.version>
+    <maven.compiler.source>11</maven.compiler.source>
+    <maven.compiler.target>11</maven.compiler.target>
+    <maven.compiler.release>11</maven.compiler.release>
+
+    <!-- Project encoding properties -->
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+    <!-- Quarkus framework versions -->
+    <quarkus.platform.group-id>com.redhat.quarkus.platform</quarkus.platform.group-id>
+    <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
+    <quarkus.platform.version>2.7.6.Final-redhat-00012</quarkus.platform.version>
+    <quarkus.plugins.version>2.7.6.Final-redhat-00006</quarkus.plugins.version>
+
+    <!-- Maven plugin versions -->
+    <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>${quarkus.platform.group-id}</groupId>
+        <artifactId>${quarkus.platform.artifact-id}</artifactId>
+        <version>${quarkus.platform.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>${quarkus.platform.group-id}</groupId>
+        <artifactId>quarkus-camel-bom</artifactId>
+        <version>${quarkus.platform.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <!-- Quarkus/Camel dependencies -->
+    <dependency>
+      <groupId>org.apache.camel.quarkus</groupId>
+      <artifactId>camel-quarkus-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel.quarkus</groupId>
+      <artifactId>camel-quarkus-http</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel.quarkus</groupId>
+      <artifactId>camel-quarkus-netty-http</artifactId>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>io.quarkus</groupId>
+        <artifactId>quarkus-maven-plugin</artifactId>
+        <version>${quarkus.plugins.version}</version>
+        <extensions>true</extensions>
+        <executions>
+          <execution>
+            <id>default-generate-code</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>generate-code</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>default-generate-code-tests</id>
+            <phase>generate-test-sources</phase>
+            <goals>
+              <goal>generate-code-tests</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>default-build</id>
+            <phase>package</phase>
+            <goals>
+              <goal>build</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>${maven-compiler-plugin.version}</version>
+        <configuration>
+          <source>${maven.compiler.source}</source>
+          <target>${maven.compiler.target}</target>
+          <release>${maven.compiler.release}</release>
+          <compilerArgs>
+            <arg>-parameters</arg>
+          </compilerArgs>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <repositories>
+    <repository>
+      <id>redhat-ga</id>
+      <name>Red Hat Maven Repository (GA)</name>
+      <url>https://maven.repository.redhat.com/ga/</url>
+      <layout>default</layout>
+      <releases>
+        <enabled>true</enabled>
+        <updatePolicy>never</updatePolicy>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+        <updatePolicy>never</updatePolicy>
+      </snapshots>
+    </repository>
+  </repositories>
+
+  <pluginRepositories>
+    <pluginRepository>
+      <id>redhat-ga</id>
+      <name>Red Hat Maven Repository (GA)</name>
+      <url>https://maven.repository.redhat.com/ga/</url>
+      <layout>default</layout>
+      <releases>
+        <enabled>true</enabled>
+        <updatePolicy>never</updatePolicy>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+        <updatePolicy>never</updatePolicy>
+      </snapshots>
+    </pluginRepository>
+  </pluginRepositories>
+
+  <profiles>
+    <profile>
+      <id>ocp-build</id>
+      <properties>
+        <!--
+          Also set the following on commandline:
+
+          -Dquarkus.kubernetes-client.master-url=
+          -Dquarkus.kubernetes-client.token=
+          -Dquarkus.kubernetes-client.trust-certs=true (optional)
+        -->
+
+        <!-- set this to target namespace -->
+        <quarkus.container-image.group>urlfixer</quarkus.container-image.group>
+
+        <!-- set this to imagestream name -->
+        <quarkus.container-image.name>urlfixer</quarkus.container-image.name>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>io.quarkus</groupId>
+          <artifactId>quarkus-openshift</artifactId>
+        </dependency>
+      </dependencies>
+    </profile>
+  </profiles>
+</project>

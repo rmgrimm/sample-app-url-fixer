@@ -1,0 +1,9 @@
+/.mvn/wrapper/*.jar
+
+target/
+!**/src/**/target/
+
+.idea/
+*.iml
+/gen/
+.attach_pid*
